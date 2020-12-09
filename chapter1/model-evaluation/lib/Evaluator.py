@@ -19,11 +19,17 @@ class Evaluator:
         ret = []
         groundTruths = []
         detections = []
+        print("classes  : ", classes, ", num_pos : ", num_pos)
+        print("gt_boxes : ", gt_boxes)
+        print("det_boxes: ", det_boxes)
         
         for c in classes:
+            print("类别c : {}-------------------".format(c))
+            # 每个类别的预测、标签、总标签数
             dects = det_boxes[c]
             gt_class = gt_boxes[c]
             npos = num_pos[c]
+            # 预测结果以得分从高到低排序
             dects = sorted(dects, key=lambda conf: conf[4], reverse=True)
             TP = np.zeros(len(dects))
             FP = np.zeros(len(dects))
@@ -31,10 +37,13 @@ class Evaluator:
             for d in range(len(dects)):
 
                 iouMax = sys.float_info.min
+                # 遍历与预测框同一图片中的同一类别，计算IoU
+                # 为啥不与标注搞一样的结构，搞那么绕，让人晕啊！！！
                 if dects[d][-1] in gt_class:
                     for j in range(len(gt_class[dects[d][-1]])):
                         iou = Evaluator.iou(dects[d][:4], gt_class[dects[d][-1]][j][:4])
                         if iou > iouMax:
+                            # 记录最大IoU的标签
                             iouMax = iou
                             jmax = j
 
@@ -49,12 +58,17 @@ class Evaluator:
                         FP[d] = 1
                 else:
                     FP[d] = 1
-            
+            print("FP :", FP)
+            print("TP :", TP)
             acc_FP = np.cumsum(FP)
             acc_TP = np.cumsum(TP)
+            print("acc_FP : ", acc_FP)
+            print("acc_TP : ", acc_TP)
             rec = acc_TP / npos
             prec = np.divide(acc_TP, (acc_FP + acc_TP))
             print(' ')
+            print("rec  : ", rec)
+            print("prec : ", prec)
             [ap, mpre, mrec, ii] = Evaluator.CalculateAveragePrecision(rec, prec)
             r = {
                 'class': c,
@@ -67,6 +81,7 @@ class Evaluator:
                 'total TP': np.sum(TP),
                 'total FP': np.sum(FP),
             }
+            print("r :", r)
             ret.append(r)
         return ret, classes
 

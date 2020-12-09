@@ -11,7 +11,7 @@ cfg = yaml.load(data)
 
 gtFolder = 'data/groundtruths'
 detFolder = 'data/detections'
-savePath = 'data/results'
+savePath = 'data/results2'
 
 results, classes = detections(cfg, gtFolder, detFolder, savePath)
 plot_save_result(cfg, results, classes, savePath)
